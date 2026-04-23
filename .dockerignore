@@ -1,0 +1,11 @@
+.venv/
+.git/
+.pytest_cache/
+__pycache__/
+*.egg-info/
+tests/
+examples/
+helm/
+.gitlab-ci.yml
+.dockerignore
+*.md

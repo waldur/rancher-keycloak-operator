@@ -1,0 +1,67 @@
+# Default values for rancher-keycloak-operator.
+
+replicaCount: 1
+
+image:
+  registry: ""
+  repository: opennode/rancher-keycloak-operator
+  pullPolicy: IfNotPresent
+  tag: "0.0.3"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 65534
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65534
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+# Operator configuration
+config:
+  # Rancher management server settings (cluster IDs come from CRs, not config)
+  rancher:
+    url: ""
+    bearerToken: ""
+    verifySsl: "false"
+
+  # Keycloak settings (optional, omit url to disable)
+  keycloak:
+    url: ""
+    realm: ""
+    username: ""
+    password: ""
+    userRealm: "master"
+    verifySsl: "false"
+
+  # CR namespace
+  crNamespace: "waldur-system"
+
+# Use an existing secret instead of creating one from config values above.
+# The secret must contain the environment variables listed in README.md.
+existingSecret: ""
+
+# Install CRDs. Set to false if CRDs are managed separately.
+installCRDs: true
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}

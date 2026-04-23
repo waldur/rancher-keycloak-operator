@@ -1,0 +1,31 @@
+apiVersion: waldur.io/v1alpha1
+kind: ManagedRancherProject
+metadata:
+  name: operator-test-project
+  namespace: waldur-system
+  labels:
+    waldur.io/resource-uuid: "test-uuid-001"
+spec:
+  projectName: "waldur-operator-test"
+  clusterId: "c-m-bmwbscft"
+  description: "Operator integration test project"
+  organization: "test-org"
+  projectSlug: "operator-test"
+
+  namespace:
+    name: "waldur-operator-test"
+    labels:
+      managed-by: "waldur-operator"
+
+  resourceQuotas:
+    limits.cpu: "2000m"
+    limits.memory: "4096Mi"
+
+  keycloak:
+    enabled: true
+    parentGroupName: "c_operatortest"
+    roleBindings:
+      - groupName: "project_operator-test_workloads-manage"
+        rancherRole: "workloads-manage"
+        description: "Test project members"
+        members: []

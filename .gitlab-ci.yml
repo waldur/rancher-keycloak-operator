@@ -1,0 +1,131 @@
+include:
+  - project: "waldur/waldur-pipelines"
+    file: "/templates/stages.yml"
+  - project: "waldur/waldur-pipelines"
+    file: "/templates/release/publish-multiarch.yml"
+  - project: "waldur/waldur-pipelines"
+    file: "/templates/test/lint-dockerfile.yaml"
+
+variables:
+  COMPONENT_VERSION: "latest"
+
+# --- Test stage ---
+
+Run unit tests:
+  image: "registry.hpc.ut.ee/mirror/library/python:3.13"
+  stage: test
+  interruptible: true
+  rules:
+    - if: '$SKIP_TESTS == "true" || $SKIP_TESTS == "yes"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_TAG
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+    - pip install uv
+    - uv sync --extra dev
+    - uv pip install -e .
+    - uv run pytest tests/ -v --junitxml=report.xml
+      --ignore=tests/test_integration.py || test $? -eq 5
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+
+Run linters:
+  image: "registry.hpc.ut.ee/mirror/library/python:3.13"
+  stage: test
+  interruptible: true
+  rules:
+    - if: '$SKIP_TESTS == "true" || $SKIP_TESTS == "yes"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_TAG
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+    - pip install uv
+    - uv sync --extra dev
+    - uv run ruff check .
+
+Lint dockerfile:
+  extends: .Lint dockerfile template
+  variables:
+    DOCKERFILE: Dockerfile
+    HADOLINT_CONFIG: |
+      ignored:
+        - DL3018
+        - DL3008
+        - DL3013
+
+Lint helm chart:
+  image:
+    name: "registry.hpc.ut.ee/mirror/alpine/helm:3.12.3"
+    entrypoint: [""]
+  stage: test
+  interruptible: true
+  rules:
+    - if: '$SKIP_TESTS == "true" || $SKIP_TESTS == "yes"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_TAG
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - helm/**/*
+  script:
+    - helm lint helm/rancher-keycloak-operator/
+    - helm template rancher-keycloak-operator helm/rancher-keycloak-operator/ --debug
+
+# --- Release stage ---
+
+Publish multiarch docker image latest:
+  extends: .Publish multiarch latest docker image template
+  variables:
+    EXTRA_BUILD_ARGS: "--build-arg COMMIT_INFO=${CI_COMMIT_SHORT_SHA} --build-arg VERSION=latest"
+
+Publish multiarch docker image with version:
+  extends: .Publish multiarch docker image with specific version template
+  variables:
+    EXTRA_BUILD_ARGS: "--build-arg COMMIT_INFO=${CI_COMMIT_SHORT_SHA} --build-arg VERSION=${CI_COMMIT_TAG}"
+
+Publish helm chart:
+  image:
+    name: "registry.hpc.ut.ee/mirror/alpine/helm:3.12.3"
+    entrypoint: [""]
+  stage: release
+  interruptible: true
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - apk update && apk add git
+    - git remote remove github-origin || true
+    - git remote add github-origin https://opennode-jenkins:$OPENNODE_JENKINS_GITHUB_TOKEN@github.com/waldur/rancher-keycloak-operator.git
+    - git config user.name "Opennode Jenkins"
+    - git config user.email jenkins@opennodecloud.com
+    - git fetch github-origin
+    # Set version in chart
+    - |
+      sed -i -E -e "s/^version: ('.*'|.*)$/version: $CI_COMMIT_TAG/" helm/rancher-keycloak-operator/Chart.yaml
+    - |
+      sed -i -E -e "s/^appVersion: ('.*'|.*)$/appVersion: \"$CI_COMMIT_TAG\"/" helm/rancher-keycloak-operator/Chart.yaml
+    - |
+      sed -i -E -e "s/^  tag: \".*\"$/  tag: \"$CI_COMMIT_TAG\"/" helm/rancher-keycloak-operator/values.yaml
+    # Package chart
+    - helm package helm/rancher-keycloak-operator/
+    - ls rancher-keycloak-operator-*.tgz
+    - git stash
+    # Publish to gh-pages
+    - git checkout gh-pages || git checkout --orphan gh-pages
+    - git pull github-origin gh-pages || true
+    - mkdir charts/ || true
+    - mv rancher-keycloak-operator-$CI_COMMIT_TAG.tgz charts/
+    - helm repo index .
+    - git add charts/ index.yaml
+    - git commit -m "Release $CI_COMMIT_TAG"
+    - git push github-origin gh-pages

@@ -1,0 +1,178 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: managedrancherprojects.waldur.io
+spec:
+  group: waldur.io
+  names:
+    kind: ManagedRancherProject
+    listKind: ManagedRancherProjectList
+    plural: managedrancherprojects
+    singular: managedrancherproject
+    shortNames:
+      - mrp
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Project
+          type: string
+          jsonPath: .spec.projectName
+        - name: Cluster
+          type: string
+          jsonPath: .spec.clusterId
+        - name: Rancher ID
+          type: string
+          jsonPath: .status.rancherProjectId
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required:
+                - projectName
+                - clusterId
+              properties:
+                projectName:
+                  type: string
+                  description: "Name for the Rancher project"
+                clusterId:
+                  type: string
+                  description: "Rancher cluster ID (e.g. c-m-abc123)"
+                description:
+                  type: string
+                  default: ""
+                organization:
+                  type: string
+                  description: "Customer/organization slug from Waldur"
+                  default: ""
+                projectSlug:
+                  type: string
+                  description: "Waldur project slug"
+                  default: ""
+
+                namespace:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: "Namespace name (defaults to projectName)"
+                    labels:
+                      type: object
+                      additionalProperties:
+                        type: string
+
+                resourceQuotas:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: "K8s ResourceQuota spec (e.g. limits.cpu: '4000m')"
+
+                keycloak:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      default: true
+                    parentGroupName:
+                      type: string
+                      description: "Parent group name (e.g. c_abcd1234)"
+                    roleBindings:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - groupName
+                          - rancherRole
+                        properties:
+                          groupName:
+                            type: string
+                            description: "Keycloak child group name"
+                          rancherRole:
+                            type: string
+                            description: "Rancher role template ID"
+                          description:
+                            type: string
+                            default: ""
+                          members:
+                            type: array
+                            items:
+                              type: object
+                              required:
+                                - userIdentifier
+                              properties:
+                                userIdentifier:
+                                  type: string
+                                  description: "Keycloak user ID or username"
+                                lookupByID:
+                                  type: boolean
+                                  default: true
+
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum:
+                    - Pending
+                    - Creating
+                    - Ready
+                    - Updating
+                    - Deleting
+                    - Error
+                rancherProjectId:
+                  type: string
+                namespaceName:
+                  type: string
+                keycloakParentGroupId:
+                  type: string
+                keycloakRoleBindings:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      groupName:
+                        type: string
+                      keycloakGroupId:
+                        type: string
+                      rancherBindingId:
+                        type: string
+                      memberCount:
+                        type: integer
+                      syncedMembers:
+                        type: array
+                        items:
+                          type: string
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                        enum: ["True", "False", "Unknown"]
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+                      reason:
+                        type: string
+                      message:
+                        type: string
+                lastReconcileTime:
+                  type: string
+                  format: date-time
+                observedGeneration:
+                  type: integer
