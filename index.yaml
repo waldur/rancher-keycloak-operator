@@ -2,8 +2,30 @@ apiVersion: v1
 entries:
   rancher-keycloak-operator:
   - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-04-23T09:06:57.110188026Z"
+    description: A Helm chart for the Rancher Keycloak Operator - manages Rancher
+      projects and Keycloak OIDC groups via CRDs
+    digest: 82424bcef58020483067a1a72a1d7b16690e1adfd5e1493db7a674cc1b6b516b
+    home: https://waldur.com/
+    keywords:
+    - rancher
+    - keycloak
+    - operator
+    - kubernetes
+    - oidc
+    maintainers:
+    - email: info@waldur.com
+      name: Waldur Team
+    name: rancher-keycloak-operator
+    sources:
+    - https://code.opennodecloud.com/waldur/rancher-keycloak-operator
+    urls:
+    - charts/rancher-keycloak-operator-0.1.0.tgz
+    version: 0.1.0
+  - apiVersion: v2
     appVersion: 0.0.3
-    created: "2026-04-23T08:01:04.20863109Z"
+    created: "2026-04-23T09:06:57.10976769Z"
     description: A Helm chart for the Rancher Keycloak Operator - manages Rancher
       projects and Keycloak OIDC groups via CRDs
     digest: b426c70744cf2eb8b0590c1c1956dfb3cd666c451cee7ea39eefe7dca0995d41
@@ -23,4 +45,4 @@ entries:
     urls:
     - charts/rancher-keycloak-operator-0.0.3.tgz
     version: 0.0.3
-generated: "2026-04-23T08:01:04.205640272Z"
+generated: "2026-04-23T09:06:57.109178731Z"
