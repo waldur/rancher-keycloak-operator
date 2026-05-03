@@ -2,8 +2,30 @@ apiVersion: v1
 entries:
   rancher-keycloak-operator:
   - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2026-05-03T14:20:19.631483685Z"
+    description: A Helm chart for the Rancher Keycloak Operator - manages Rancher
+      projects and Keycloak OIDC groups via CRDs
+    digest: 5c0c0900233bc411eb835a25a29b67404d392d4204d4e0c256bd0fec6d770ae7
+    home: https://waldur.com/
+    keywords:
+    - rancher
+    - keycloak
+    - operator
+    - kubernetes
+    - oidc
+    maintainers:
+    - email: info@waldur.com
+      name: Waldur Team
+    name: rancher-keycloak-operator
+    sources:
+    - https://code.opennodecloud.com/waldur/rancher-keycloak-operator
+    urls:
+    - charts/rancher-keycloak-operator-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
     appVersion: 0.2.0
-    created: "2026-05-02T20:17:31.345015694Z"
+    created: "2026-05-03T14:20:19.63039927Z"
     description: A Helm chart for the Rancher Keycloak Operator - manages Rancher
       projects and Keycloak OIDC groups via CRDs
     digest: 8ffc938485a41da625b4956e0daf4cf1039c08dcfc62c2be32b27c7730c3e654
@@ -25,7 +47,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2026-05-02T20:17:31.34382637Z"
+    created: "2026-05-03T14:20:19.625568143Z"
     description: A Helm chart for the Rancher Keycloak Operator - manages Rancher
       projects and Keycloak OIDC groups via CRDs
     digest: 82424bcef58020483067a1a72a1d7b16690e1adfd5e1493db7a674cc1b6b516b
@@ -47,7 +69,7 @@ entries:
     version: 0.1.0
   - apiVersion: v2
     appVersion: 0.0.3
-    created: "2026-05-02T20:17:31.342339622Z"
+    created: "2026-05-03T14:20:19.625133273Z"
     description: A Helm chart for the Rancher Keycloak Operator - manages Rancher
       projects and Keycloak OIDC groups via CRDs
     digest: b426c70744cf2eb8b0590c1c1956dfb3cd666c451cee7ea39eefe7dca0995d41
@@ -67,4 +89,4 @@ entries:
     urls:
     - charts/rancher-keycloak-operator-0.0.3.tgz
     version: 0.0.3
-generated: "2026-05-02T20:17:31.341664448Z"
+generated: "2026-05-03T14:20:19.624457548Z"
